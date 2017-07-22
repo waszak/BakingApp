@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.recipe_list) RecyclerView mMovieList;
 
     private LayoutManager mLayoutManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
