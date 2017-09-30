@@ -1,5 +1,6 @@
 package com.example.android.bakingapp.models;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,11 @@ public class Recipe implements Parcelable
     private String image;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+
+    public Recipe(){
+        ingredients = new ArrayList<>();
+        steps = new ArrayList<>();
+    }
     public final static Parcelable.Creator<Recipe> CREATOR = new Creator<Recipe>() {
 
 
@@ -48,8 +54,8 @@ public class Recipe implements Parcelable
             Recipe instance = new Recipe();
             instance.id = ((Integer) in.readValue((Integer.class.getClassLoader())));
             instance.name = ((String) in.readValue((String.class.getClassLoader())));
-            in.readList(instance.ingredients, (Ingredient.class.getClassLoader()));
-            in.readList(instance.steps, (Step.class.getClassLoader()));
+            in.readTypedList(instance.ingredients, Ingredient.CREATOR);
+            in.readTypedList(instance.steps, Step.CREATOR);
             instance.servings = ((Integer) in.readValue((Integer.class.getClassLoader())));
             instance.image = ((String) in.readValue((String.class.getClassLoader())));
             instance.additionalProperties = ((Map<String, Object> ) in.readValue((Map.class.getClassLoader())));
@@ -136,8 +142,8 @@ public class Recipe implements Parcelable
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeValue(id);
         dest.writeValue(name);
-        dest.writeList(ingredients);
-        dest.writeList(steps);
+        dest.writeTypedList(ingredients);
+        dest.writeTypedList(steps);
         dest.writeValue(servings);
         dest.writeValue(image);
         dest.writeValue(additionalProperties);

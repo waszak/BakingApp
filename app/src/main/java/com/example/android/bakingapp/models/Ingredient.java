@@ -49,8 +49,8 @@ public class Ingredient implements Parcelable
             return (new Ingredient[size]);
         }
 
-    }
-            ;
+    };
+
 
     @JsonProperty("quantity")
     public Integer getQuantity() {
