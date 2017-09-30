@@ -1,18 +1,20 @@
 package com.example.android.bakingapp;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.LayoutManager;
-import android.util.Log;
 
 import com.example.android.bakingapp.adapters.RecipeListAdapter;
 import com.example.android.bakingapp.models.Recipe;
+import com.example.android.bakingapp.utilities.NetworkUtils;
 import com.example.android.bakingapp.utilities.RecipeService;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -20,14 +22,14 @@ import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
+import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements RecipeListAdapter.RecipeListOnClickHandler {
 
-    @BindView(R.id.recipe_list) RecyclerView mMovieList;
+    @BindView(R.id.recipe_list) RecyclerView mRecipeList;
 
     private LayoutManager mLayoutManager;
+    private RecipeListAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,36 +38,45 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         mLayoutManager = new LinearLayoutManager(this);
+        mRecipeList.setLayoutManager(mLayoutManager);
+        mRecipeList.setHasFixedSize(true);
+        mAdapter = new RecipeListAdapter(MainActivity.this);
+        mAdapter.setRecipesList(new LinkedList<>());
+        mRecipeList.setAdapter(mAdapter);
+        fillRecipeList();
+    }
 
-        mMovieList.setLayoutManager(mLayoutManager);
-        mMovieList.setHasFixedSize(true);
+    private void fillRecipeList() {
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://d17h27t6h515a5.cloudfront.net/")
-                .addConverterFactory(JacksonConverterFactory.create())
-                .build();
-
-        RecipeService recipeService = retrofit.create(RecipeService.class);
+        RecipeService recipeService = NetworkUtils.buildRecipeService(this);
         recipeService.loadRecipeListing().enqueue(new Callback<List<Recipe>>() {
                 @Override
-                public void onResponse(Call<List<Recipe>> call, Response<List<Recipe>> response) {
-                    if (response.isSuccessful()) {
+                public void onResponse(@NonNull Call<List<Recipe>> call, @NonNull Response<List<Recipe>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
                         // tasks available
-                        RecipeListAdapter adapter = new RecipeListAdapter();
-                        adapter.setRecipesList(new ArrayList<>(response.body()));
-                        mMovieList.setAdapter(adapter);
+                        mAdapter.setRecipesList(response.body());
+
                     } else {
-                        // error response, no access to resource?
+                        Timber.e("Error response, no access to resource");
                     }
                 }
 
                 @Override
-                public void onFailure(Call<List<Recipe>> call, Throwable t) {
+                public void onFailure(@NonNull Call<List<Recipe>> call, @NonNull Throwable t) {
                     // something went completely south (like no internet connection)
-                    Log.d("Error", t.getMessage());
+                    Timber.d(t,"Error");
                 }
             });
+    }
 
-
+    @Override
+    public void onClick(Recipe recipe) {
+        Context context = MainActivity.this;
+        Class destinationActivity = IngredientListActivity.class;
+        Intent startChildActivityIntent = new Intent(context, destinationActivity);
+        startChildActivityIntent.putExtra(Recipe.TAG, recipe);
+        //startChildActivityIntent.putExtra(MOVIES_ADAPTER_STATE, mMoviesAdapter.getList());
+        //startActivityForResult(startChildActivityIntent, MOVIE_DETAILS_REQUEST);
+        startActivity(startChildActivityIntent);
     }
 }

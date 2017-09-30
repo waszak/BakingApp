@@ -5,12 +5,19 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.models.Recipe;
+import com.example.android.bakingapp.models.Step;
+import com.example.android.bakingapp.utilities.NetworkUtils;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.squareup.picasso.Callback;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -21,6 +28,7 @@ import butterknife.ButterKnife;
 
 public class RecipeListAdapter  extends RecyclerView.Adapter<RecipeListAdapter.RecipeViewHolder>{
 
+    private final RecipeListOnClickHandler mClickHandler;
     private ArrayList<Recipe> mRecipes;
 
     @Override
@@ -36,6 +44,27 @@ public class RecipeListAdapter  extends RecyclerView.Adapter<RecipeListAdapter.R
     public void onBindViewHolder(RecipeViewHolder holder, int position) {
         Recipe recipe = mRecipes.get(position);
         holder.mRecipeNameTextView.setText(recipe.getName());
+        Callback callback = new Callback() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        };
+        if(!Strings.isNullOrEmpty(recipe.getImage())){
+            NetworkUtils.buildImageRequest(holder.mContext, recipe.getImage())
+                    .into(holder.mRecipeImage, callback);
+        }else{
+           Step step = Lists.reverse(recipe.getSteps()).stream()
+                   .filter(r->!Strings.isNullOrEmpty(r.getVideoURL())).findFirst().orElse(null);
+            if(step != null){
+                NetworkUtils.loadThumbnail(holder.mRecipeImage, step.getVideoURL());
+            }
+        }
     }
 
     @Override
@@ -43,12 +72,17 @@ public class RecipeListAdapter  extends RecyclerView.Adapter<RecipeListAdapter.R
         return (mRecipes ==  null) ? 0 : mRecipes.size();
     }
 
-    public void setRecipesList(ArrayList<Recipe> recipes) {
-        mRecipes = recipes;
+    public void setRecipesList(List<Recipe> recipes) {
+        mRecipes = new ArrayList<>(recipes);
         notifyDataSetChanged();
     }
 
-
+    public interface RecipeListOnClickHandler{
+        void onClick(Recipe recipe);
+    }
+    public RecipeListAdapter(RecipeListOnClickHandler clickHandler){
+        mClickHandler = clickHandler;
+    }
     /**
      * Cache of the children views for a list item.
      */
@@ -56,6 +90,7 @@ public class RecipeListAdapter  extends RecyclerView.Adapter<RecipeListAdapter.R
             implements View.OnClickListener {
 
         @BindView(R.id.recipe_name) TextView mRecipeNameTextView;
+        @BindView(R.id.recipe_image) ImageView mRecipeImage;
 
         // Will display the position in the grid, ie 0 through getItemCount() - 1
         final Context mContext;
@@ -81,8 +116,8 @@ public class RecipeListAdapter  extends RecyclerView.Adapter<RecipeListAdapter.R
         @Override
         public void onClick(View v) {
             int adapterPosition = getAdapterPosition();
-            Recipe movie = mRecipes.get(adapterPosition);
-            //mClickHandler.onClick(movie);
+            Recipe recipe = mRecipes.get(adapterPosition);
+            mClickHandler.onClick(recipe);
         }
     }
 }

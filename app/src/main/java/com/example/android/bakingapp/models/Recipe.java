@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 })
 public class Recipe implements Parcelable
 {
-
+    public static String TAG = Recipe.class.getSimpleName();
     @JsonProperty("id")
     private Integer id;
     @JsonProperty("name")
