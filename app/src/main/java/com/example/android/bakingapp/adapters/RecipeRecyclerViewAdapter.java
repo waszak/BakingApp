@@ -16,15 +16,11 @@ public class RecipeRecyclerViewAdapter
         extends ListDelegationAdapter<List<Parcelable>> {
 
     public RecipeRecyclerViewAdapter(Activity activity, Recipe recipe) {
-
         delegatesManager.addDelegate( new IngredientItemAdapterDelegate(activity));
+        delegatesManager.addDelegate( new StepItemAdapterDelegate(activity));
         List<Parcelable> parcelableList = new ArrayList<>();
         parcelableList.addAll(recipe.getIngredients());
+        parcelableList.addAll(recipe.getSteps());
         setItems(parcelableList);
     }
-
-
-
-
-
 }

@@ -24,6 +24,8 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 import rx.schedulers.Schedulers;
 
+import static android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC;
+
 /**
  * These utilities will be used to communicate with the network.
  */
@@ -78,7 +80,7 @@ public class NetworkUtils {
                     mediaMetadataRetriever = new MediaMetadataRetriever();
                     mediaMetadataRetriever.setDataSource(movieUrl, new HashMap<>());
 
-                    bitmap = mediaMetadataRetriever.getFrameAtTime();
+                    bitmap = mediaMetadataRetriever.getFrameAtTime(OPTION_CLOSEST_SYNC);
                 } catch (Exception e) {
                     e.printStackTrace();
 

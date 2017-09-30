@@ -22,13 +22,13 @@ import butterknife.ButterKnife;
  * Created by Waszak on 30.09.2017.
  */
 
-public class IngredientItemAdapterDelegate extends AbsListItemAdapterDelegate<Ingredient, Parcelable,
+class IngredientItemAdapterDelegate extends AbsListItemAdapterDelegate<Ingredient, Parcelable,
         IngredientItemAdapterDelegate.IngredientViewHolder> {
 
 
     private LayoutInflater inflater;
 
-    public IngredientItemAdapterDelegate(Activity activity) {
+    IngredientItemAdapterDelegate(Activity activity) {
         inflater = activity.getLayoutInflater();
     }
 
@@ -48,37 +48,16 @@ public class IngredientItemAdapterDelegate extends AbsListItemAdapterDelegate<In
     protected void onBindViewHolder(@NonNull Ingredient ingredient,
                                     @NonNull IngredientViewHolder holder,
                                     @NonNull List<Object> mValues) {
-        holder.mItem = ingredient;
+        holder.mIngredient = ingredient;
         holder.mIngredientName.setText(ingredient.getIngredient());
         holder.mIngredientQuantity.setText(ingredient.getQuantity().toString()+" "+ ingredient.getMeasure());
-
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               /* if (mTwoPane) {
-                    Bundle arguments = new Bundle();
-                    arguments.putString(IngredientDetailFragment.ARG_ITEM_ID, holder.mItem);
-                    IngredientDetailFragment fragment = new IngredientDetailFragment();
-                    fragment.setArguments(arguments);
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.ingriedient_detail_container, fragment)
-                            .commit();
-                } else {
-                    Context context = v.getContext();
-                    Intent intent = new Intent(context, IngredientDetailActivity.class);
-                    intent.putExtra(IngredientDetailFragment.ARG_ITEM_ID, holder.mItem);
-
-                    context.startActivity(intent);
-                }*/
-            }
-        });
     }
 
      class IngredientViewHolder extends RecyclerView.ViewHolder {
          final View mView;
          @BindView(R.id.ingredient_name) TextView mIngredientName;
          @BindView(R.id.ingredient_quantity) TextView mIngredientQuantity;
-         Ingredient mItem;
+         Ingredient mIngredient;
          IngredientViewHolder(View view) {
              super(view);
              ButterKnife.bind(this, itemView);
