@@ -29,7 +29,7 @@ public class Ingredient implements Parcelable
     @JsonProperty("ingredient")
     private String ingredient;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
     public final static Parcelable.Creator<Ingredient> CREATOR = new Creator<Ingredient>() {
 
 

@@ -33,7 +33,7 @@ public class Step implements Parcelable
     @JsonProperty("thumbnailURL")
     private String thumbnailURL;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
     public final static Parcelable.Creator<Step> CREATOR = new Creator<Step>() {
 
 

@@ -5,4 +5,6 @@
     <string name="title_ingredient_detail">Ingredient Detail</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
+    <string name="recipe_image">recipe image</string>
+    <string name="step_image">step image</string>
 </resources>

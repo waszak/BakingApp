@@ -1,6 +1,5 @@
 package com.example.android.bakingapp;
 
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
@@ -10,20 +9,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.widget.RemoteViews;
 
-import com.example.android.bakingapp.models.Recipe;
-import com.example.android.bakingapp.utilities.NetworkUtils;
-import com.example.android.bakingapp.utilities.RecipePreferences;
-import com.example.android.bakingapp.utilities.RecipeService;
 import com.example.android.bakingapp.utilities.WidgetService;
-import com.google.android.exoplayer2.upstream.DataSource;
-
-import java.io.IOException;
-import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import timber.log.Timber;
 
 /**
  * Implementation of App Widget functionality.

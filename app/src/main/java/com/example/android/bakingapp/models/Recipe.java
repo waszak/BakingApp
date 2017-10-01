@@ -38,7 +38,7 @@ public class Recipe implements Parcelable
     @JsonProperty("image")
     private String image;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
     public Recipe(){
         ingredients = new ArrayList<>();

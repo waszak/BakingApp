@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.LayoutManager;
 
@@ -17,6 +17,7 @@ import com.example.android.bakingapp.utilities.RecipeService;
 import java.util.LinkedList;
 import java.util.List;
 
+import butterknife.BindInt;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
 
     private final String TAG = MainActivity.class.getSimpleName();
     @BindView(R.id.recipe_list) RecyclerView mRecipeList;
+    @BindInt(R.integer.columns_recipes) int columns;
 
     private LayoutManager mLayoutManager;
     private RecipeListAdapter mAdapter;
@@ -38,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        mLayoutManager = new LinearLayoutManager(this);
+        mLayoutManager = new GridLayoutManager(this,columns);
         mRecipeList.setLayoutManager(mLayoutManager);
         mRecipeList.setHasFixedSize(true);
         mAdapter = new RecipeListAdapter(MainActivity.this);
@@ -98,8 +100,6 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
         Class destinationActivity = IngredientListActivity.class;
         Intent startChildActivityIntent = new Intent(context, destinationActivity);
         startChildActivityIntent.putExtra(Recipe.TAG, recipe);
-        //startChildActivityIntent.putExtra(MOVIES_ADAPTER_STATE, mMoviesAdapter.getList());
-        //startActivityForResult(startChildActivityIntent, MOVIE_DETAILS_REQUEST);
         startActivity(startChildActivityIntent);
     }
 }

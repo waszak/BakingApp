@@ -1,22 +1,17 @@
 package com.example.android.bakingapp;
 
-import android.appwidget.AppWidgetManager;
-import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import com.example.android.bakingapp.models.Ingredient;
 import com.example.android.bakingapp.models.Recipe;
-import com.example.android.bakingapp.models.Step;
 import com.example.android.bakingapp.utilities.NetworkUtils;
 import com.example.android.bakingapp.utilities.RecipePreferences;
 import com.example.android.bakingapp.utilities.RecipeService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;

@@ -1,9 +1,7 @@
 package com.example.android.bakingapp;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -70,11 +68,7 @@ public class IngredientDetailFragment extends Fragment {
             } if(args.containsKey(Step.TAG)){
                 mStep = args.getParcelable(Step.TAG);
             }
-            Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
-            if (appBarLayout != null) {
-                //appBarLayout.setTitle(mItem.content);
-            }
+
         }
         if(savedInstanceState != null && savedInstanceState.containsKey(Recipe.TAG)){
             mRecipe = savedInstanceState.getParcelable(Recipe.TAG);
