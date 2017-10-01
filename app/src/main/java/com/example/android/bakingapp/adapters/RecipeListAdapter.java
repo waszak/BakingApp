@@ -44,20 +44,9 @@ public class RecipeListAdapter  extends RecyclerView.Adapter<RecipeListAdapter.R
     public void onBindViewHolder(RecipeViewHolder holder, int position) {
         Recipe recipe = mRecipes.get(position);
         holder.mRecipeNameTextView.setText(recipe.getName());
-        Callback callback = new Callback() {
-            @Override
-            public void onSuccess() {
-
-            }
-
-            @Override
-            public void onError() {
-
-            }
-        };
         if(!Strings.isNullOrEmpty(recipe.getImage())){
             NetworkUtils.buildImageRequest(holder.mContext, recipe.getImage())
-                    .into(holder.mRecipeImage, callback);
+                    .into(holder.mRecipeImage);
         }else{
            Step step = Lists.reverse(recipe.getSteps()).stream()
                    .filter(r->!Strings.isNullOrEmpty(r.getVideoURL())).findFirst().orElse(null);

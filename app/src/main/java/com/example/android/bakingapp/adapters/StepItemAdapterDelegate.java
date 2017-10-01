@@ -72,7 +72,7 @@ class StepItemAdapterDelegate extends AbsListItemAdapterDelegate<Step, Parcelabl
                             } else {*/
                                 Context context = v.getContext();
                                 Intent intent = new Intent(context, IngredientDetailActivity.class);
-                                intent.putExtra(IngredientDetailFragment.ARG_ITEM_ID, holder.mStep);
+                                intent.putExtra(Step.TAG, holder.mStep);
 
                                 context.startActivity(intent);
                             //}
