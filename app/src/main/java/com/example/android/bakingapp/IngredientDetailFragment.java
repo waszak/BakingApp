@@ -113,7 +113,7 @@ public class IngredientDetailFragment extends Fragment {
             //mExoPlayer.addListener(this);
 
             // Prepare the MediaSource.
-            String userAgent = Util.getUserAgent(getContext(), "StepPlayer");
+            String userAgent = Util.getUserAgent(getContext(), getString(R.string.StepPlayer));
             Uri mediaUri = Uri.parse(step.getVideoURL());
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     getContext(), userAgent), new DefaultExtractorsFactory(), null, null);

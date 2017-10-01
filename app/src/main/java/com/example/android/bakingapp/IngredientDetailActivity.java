@@ -119,7 +119,7 @@ public class IngredientDetailActivity extends AppCompatActivity {
             //mExoPlayer.addListener(this);
 
             // Prepare the MediaSource.
-            String userAgent = Util.getUserAgent(this, "StepPlayer");
+            String userAgent = Util.getUserAgent(this, getString(R.string.StepPlayer));
             Uri mediaUri = Uri.parse(step.getVideoURL());
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     this, userAgent), new DefaultExtractorsFactory(), null, null);

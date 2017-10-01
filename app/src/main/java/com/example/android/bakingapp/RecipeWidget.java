@@ -37,7 +37,7 @@ public class RecipeWidget extends AppWidgetProvider  {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
         // There may be multiple widgets active, so update all of them
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.recipe_widget);
-        views.setTextViewText(R.id.appwidget_text, "Ingredients");
+        views.setTextViewText(R.id.appwidget_text, context.getString(R.string.Ingredients));
         views.setRemoteAdapter(R.id.recipes_widget, getServiceIntent(context, appWidgetIds));
 
 
