@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">BakingApp</string>
     <string name="recipe_network_source" translatable="false">https://go.udacity.com</string>
-    <string name="title_ingredient_list">Ingredients</string>
-    <string name="title_ingredient_detail">Ingredient Detail</string>
+    <string name="title_recipe_details">Recipe details</string>
+    <string name="title_step_detail">Step details</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
     <string name="recipe_image">recipe image</string>

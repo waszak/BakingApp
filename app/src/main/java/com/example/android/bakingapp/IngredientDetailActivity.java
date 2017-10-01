@@ -51,6 +51,7 @@ public class IngredientDetailActivity extends AppCompatActivity {
      * device.
      */
     @BindBool(R.bool.two_pane) boolean mTwoPane;
+    @BindView(R.id.detail_toolbar) Toolbar mToolbar;
 
     private SimpleExoPlayer mExoPlayer;
     private MediaSessionCompat mMediaSession;
@@ -63,8 +64,7 @@ public class IngredientDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ingredient_detail);
         ButterKnife.bind(this);
-        Toolbar toolbar = findViewById(R.id.detail_toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(mToolbar);
 
 
         // Show the Up button in the action bar.
