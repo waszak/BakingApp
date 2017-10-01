@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 
 import com.example.android.bakingapp.adapters.RecipeRecyclerViewAdapter;
 import com.example.android.bakingapp.models.Recipe;
+import com.example.android.bakingapp.models.Step;
 
 import butterknife.BindBool;
 import butterknife.BindView;
@@ -32,6 +33,8 @@ public class IngredientListActivity extends AppCompatActivity {
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.ingredient_list) RecyclerView mRecyclerView;
+    private Recipe mRecipe;
+    private Step mStep;
 
 
     @Override
@@ -52,19 +55,56 @@ public class IngredientListActivity extends AppCompatActivity {
             }
         });*/
 
-
+        onRestoreInstanceState(savedInstanceState);
         setupRecyclerView(mRecyclerView);
 
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         Intent intent = getIntent();
-        Recipe recipe = intent.getExtras().getParcelable(Recipe.TAG);
-        if( recipe == null)
-        {
+        if(intent != null && intent.getExtras() != null &&
+                intent.getExtras().containsKey(Recipe.TAG)) {
+            mRecipe = intent.getExtras().getParcelable(Recipe.TAG);
+        }
+        if( mRecipe == null) {
             throw new IllegalArgumentException("Pass recipe");
         }
-        recyclerView.setAdapter(new RecipeRecyclerViewAdapter(this,recipe));
+
+        recyclerView.setAdapter(new RecipeRecyclerViewAdapter(this, mRecipe, mTwoPane));
+        if(intent != null && intent.getExtras() != null &&
+                intent.getExtras().containsKey(Step.TAG)){
+            Bundle arguments = new Bundle();
+            mStep =  intent.getExtras().getParcelable(Step.TAG);
+            arguments.putParcelable(Step.TAG, mStep);
+            arguments.putParcelable(Recipe.TAG, mRecipe);
+            IngredientDetailFragment fragment = new IngredientDetailFragment();
+            fragment.setArguments(arguments);
+            this.getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.ingriedient_detail_container, fragment)
+                    .commit();
+        }
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        if(savedInstanceState == null){
+            return;
+        }
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState.containsKey(Recipe.TAG)){
+            mRecipe = savedInstanceState.getParcelable(Recipe.TAG);
+        } if(savedInstanceState.containsKey(Step.TAG)){
+            mStep = savedInstanceState.getParcelable(Step.TAG);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (mRecipe != null){
+            outState.putParcelable(Recipe.TAG, mRecipe);
+        }if(mStep != null){
+            outState.putParcelable(Step.TAG, mStep);
+        }
+        super.onSaveInstanceState(outState);
+    }
 }

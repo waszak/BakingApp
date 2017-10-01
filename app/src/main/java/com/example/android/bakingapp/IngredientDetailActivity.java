@@ -1,5 +1,6 @@
 package com.example.android.bakingapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,8 +10,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
+import com.example.android.bakingapp.models.Recipe;
 import com.example.android.bakingapp.models.Step;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -24,7 +27,9 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.google.common.base.Strings;
 
+import butterknife.BindBool;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -41,10 +46,17 @@ public class IngredientDetailActivity extends AppCompatActivity {
     @BindView(R.id.step_description) TextView mDescription;
     @BindView(R.id.step_video)
     SimpleExoPlayerView mExoPlayerView;
+    /**
+     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
+     * device.
+     */
+    @BindBool(R.bool.two_pane) boolean mTwoPane;
 
     private SimpleExoPlayer mExoPlayer;
     private MediaSessionCompat mMediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
+    private Step mStep;
+    private Recipe mRecipe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,42 +74,41 @@ public class IngredientDetailActivity extends AppCompatActivity {
         }
 
         Intent intent = getIntent();
-        Step step = intent.getExtras().getParcelable(Step.TAG);
-        if( step == null)
+        if(intent != null && intent.hasExtra(Step.TAG) && intent.hasExtra(Recipe.TAG)) {
+            mStep = intent.getExtras().getParcelable(Step.TAG);
+            mRecipe = intent.getExtras().getParcelable(Recipe.TAG);
+        }
+        onRestoreInstanceState(savedInstanceState);
+        if( mStep == null)
+        {
+            throw new IllegalArgumentException("Pass step");
+        }
+        if( mRecipe == null)
         {
             throw new IllegalArgumentException("Pass recipe");
         }
-        mDescription.setText(step.getDescription());
+        mDescription.setText(mStep.getDescription());
 
 
-        // savedInstanceState is non-null when there is fragment state
-        // saved from previous configurations of this activity
-        // (e.g. when rotating the screen from portrait to landscape).
-        // In this case, the fragment will automatically be re-added
-        // to its container so we don't need to manually add it.
-        // For more information, see the Fragments API guide at:
-        //
-        // http://developer.android.com/guide/components/fragments.html
-        //
-        /*if (savedInstanceState == null) {
+        if (mTwoPane) {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
-            Bundle arguments = new Bundle();
-            arguments.putString(Step.TAG,
-                    getIntent().getStringExtra(Step.TAG));
-            IngredientDetailFragment fragment = new IngredientDetailFragment();
-            fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.ingriedient_detail_container, fragment)
-                    .commit();
-        }*/
+
+            Context context = IngredientDetailActivity.this;
+            Class destinationActivity = IngredientListActivity.class;
+            Intent startChildActivityIntent = new Intent(context, destinationActivity);
+            startChildActivityIntent.putExtra(Step.TAG, mStep);
+            startChildActivityIntent.putExtra(Recipe.TAG, mRecipe);
+
+            startActivity(startChildActivityIntent);
+        }
 
         initializeMediaSession();
-        initializePlayer(step);
+        initializePlayer(mStep);
     }
 
     private void initializePlayer(Step step) {
-        if (mExoPlayer == null) {
+        if (mExoPlayer == null && !Strings.isNullOrEmpty(step.getVideoURL())) {
             // Create an instance of the ExoPlayer.
             TrackSelector trackSelector = new DefaultTrackSelector();
             LoadControl loadControl = new DefaultLoadControl();
@@ -114,10 +125,11 @@ public class IngredientDetailActivity extends AppCompatActivity {
                     this, userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
             mExoPlayer.setPlayWhenReady(true);
+        }else{
+            mExoPlayerView.setVisibility(View.INVISIBLE);
         }
     }
     private void initializeMediaSession() {
-
         // Create a MediaSessionCompat.
         mMediaSession = new MediaSessionCompat(this, TAG);
 
@@ -139,13 +151,51 @@ public class IngredientDetailActivity extends AppCompatActivity {
 
         mMediaSession.setPlaybackState(mStateBuilder.build());
 
-
-        // MySessionCallback has methods that handle callbacks from a media controller.
-       // mMediaSession.setCallback(new MySessionCallback());
-
         // Start the Media Session since the activity is active.
         mMediaSession.setActive(true);
+    }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (mRecipe != null){
+            outState.putParcelable(Recipe.TAG, mRecipe);
+        }if(mStep != null){
+            outState.putParcelable(Step.TAG, mStep);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        if(savedInstanceState == null){
+            return;
+        }
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState.containsKey(Recipe.TAG)){
+            mRecipe = savedInstanceState.getParcelable(Recipe.TAG);
+        } if(savedInstanceState.containsKey(Step.TAG)){
+            mStep = savedInstanceState.getParcelable(Step.TAG);
+        }
+    }
+    /**
+     * Release the player when the activity is destroyed.
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releasePlayer();
+        mMediaSession.setActive(false);
+    }
+
+    /**
+     * Release ExoPlayer.
+     */
+    private void releasePlayer() {
+        if(mExoPlayer != null) {
+            mExoPlayer.stop();
+            mExoPlayer.release();
+            mExoPlayer = null;
+        }
     }
 
     @Override
@@ -158,7 +208,10 @@ public class IngredientDetailActivity extends AppCompatActivity {
             //
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
-            navigateUpTo(new Intent(this, IngredientListActivity.class));
+            Intent intent = new Intent(this, IngredientListActivity.class);
+            intent.putExtra(Recipe.TAG, mRecipe);
+            intent.putExtra(Step.TAG, mStep);
+            navigateUpTo(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);

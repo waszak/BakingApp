@@ -26,6 +26,7 @@ import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity implements RecipeListAdapter.RecipeListOnClickHandler {
 
+    private final String TAG = MainActivity.class.getSimpleName();
     @BindView(R.id.recipe_list) RecyclerView mRecipeList;
 
     private LayoutManager mLayoutManager;
@@ -43,7 +44,29 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
         mAdapter = new RecipeListAdapter(MainActivity.this);
         mAdapter.setRecipesList(new LinkedList<>());
         mRecipeList.setAdapter(mAdapter);
-        fillRecipeList();
+        onRestoreInstanceState(savedInstanceState);
+        if(mAdapter.getItemCount() == 0) {
+            fillRecipeList();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (mAdapter.getRecipes() != null && mAdapter.getItemCount() != 0) {
+            outState.putParcelableArrayList(TAG, mAdapter.getRecipes());
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        if(savedInstanceState == null){
+            return;
+        }
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState.containsKey(TAG)){
+            mAdapter.setRecipesList(savedInstanceState.getParcelableArrayList(TAG));
+        }
     }
 
     private void fillRecipeList() {

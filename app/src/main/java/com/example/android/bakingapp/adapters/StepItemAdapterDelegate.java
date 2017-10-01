@@ -1,10 +1,11 @@
 package com.example.android.bakingapp.adapters;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import com.example.android.bakingapp.IngredientDetailActivity;
 import com.example.android.bakingapp.IngredientDetailFragment;
 import com.example.android.bakingapp.R;
+import com.example.android.bakingapp.models.Recipe;
 import com.example.android.bakingapp.models.Step;
 import com.example.android.bakingapp.utilities.NetworkUtils;
 import com.google.common.base.Strings;
@@ -33,9 +35,15 @@ class StepItemAdapterDelegate extends AbsListItemAdapterDelegate<Step, Parcelabl
         StepItemAdapterDelegate.StepViewHolder> {
 
     private LayoutInflater inflater;
+    private Recipe mRecipe;
+    private AppCompatActivity mActivity;
+    private boolean mTwoPane;
 
-    StepItemAdapterDelegate(Activity activity) {
-            inflater = activity.getLayoutInflater();
+    StepItemAdapterDelegate(AppCompatActivity activity, Recipe recipe, boolean twoPane) {
+        inflater = activity.getLayoutInflater();
+        mRecipe = recipe;
+        mActivity = activity;
+        mTwoPane = twoPane;
     }
 
     @Override
@@ -47,7 +55,7 @@ class StepItemAdapterDelegate extends AbsListItemAdapterDelegate<Step, Parcelabl
     @Override
     protected StepViewHolder onCreateViewHolder(@NonNull ViewGroup parent) {
             return  new StepViewHolder(inflater.inflate(R.layout.recipe_step,
-            parent, false));
+            parent, false), mRecipe);
     }
 
     @Override
@@ -61,21 +69,23 @@ class StepItemAdapterDelegate extends AbsListItemAdapterDelegate<Step, Parcelabl
             }
 
             holder.mView.setOnClickListener(v -> {
-                          /* if (mTwoPane) {
-                                Bundle arguments = new Bundle();
-                                arguments.putString(IngredientDetailFragment.ARG_ITEM_ID, holder.mItem);
-                                IngredientDetailFragment fragment = new IngredientDetailFragment();
-                                fragment.setArguments(arguments);
-                                getSupportFragmentManager().beginTransaction()
-                                        .replace(R.id.ingriedient_detail_container, fragment)
-                                        .commit();
-                            } else {*/
-                                Context context = v.getContext();
-                                Intent intent = new Intent(context, IngredientDetailActivity.class);
-                                intent.putExtra(Step.TAG, holder.mStep);
+                if (mTwoPane) {
+                    Bundle arguments = new Bundle();
+                    arguments.putParcelable(Step.TAG, holder.mStep);
+                    arguments.putParcelable(Recipe.TAG, holder.mRecipe);
+                    IngredientDetailFragment fragment = new IngredientDetailFragment();
+                    fragment.setArguments(arguments);
+                    mActivity.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.ingriedient_detail_container, fragment)
+                        .commit();
+                } else {
+                    Context context = v.getContext();
+                    Intent intent = new Intent(context, IngredientDetailActivity.class);
+                    intent.putExtra(Step.TAG, holder.mStep);
+                    intent.putExtra(Recipe.TAG, holder.mRecipe);
 
-                                context.startActivity(intent);
-                            //}
+                    context.startActivity(intent);
+                }
             });
     }
 
@@ -85,10 +95,12 @@ class StepItemAdapterDelegate extends AbsListItemAdapterDelegate<Step, Parcelabl
         ImageView mImage;
         @BindView(R.id.step_title) TextView mTitle;
         Step mStep;
-        StepViewHolder(View view) {
+        Recipe mRecipe;
+        StepViewHolder(View view, Recipe recipe) {
             super(view);
             ButterKnife.bind(this, itemView);
             mView = view;
+            mRecipe = recipe;
         }
 
     }

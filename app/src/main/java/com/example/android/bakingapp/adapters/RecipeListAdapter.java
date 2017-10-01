@@ -14,7 +14,6 @@ import com.example.android.bakingapp.models.Step;
 import com.example.android.bakingapp.utilities.NetworkUtils;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.squareup.picasso.Callback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +63,10 @@ public class RecipeListAdapter  extends RecyclerView.Adapter<RecipeListAdapter.R
     public void setRecipesList(List<Recipe> recipes) {
         mRecipes = new ArrayList<>(recipes);
         notifyDataSetChanged();
+    }
+
+    public ArrayList<Recipe> getRecipes(){
+        return mRecipes;
     }
 
     public interface RecipeListOnClickHandler{
