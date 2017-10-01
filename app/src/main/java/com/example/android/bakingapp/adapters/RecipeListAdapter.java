@@ -47,10 +47,15 @@ public class RecipeListAdapter  extends RecyclerView.Adapter<RecipeListAdapter.R
             NetworkUtils.buildImageRequest(holder.mContext, recipe.getImage())
                     .into(holder.mRecipeImage);
         }else{
-           Step step = Lists.reverse(recipe.getSteps()).stream()
-                   .filter(r->!Strings.isNullOrEmpty(r.getVideoURL())).findFirst().orElse(null);
-            if(step != null){
-                NetworkUtils.loadThumbnail(holder.mRecipeImage, step.getVideoURL());
+            Step stepForThumbnail = null;
+            for (Step step: Lists.reverse(recipe.getSteps())) {
+                if(!Strings.isNullOrEmpty(step.getVideoURL())){
+                    stepForThumbnail = step;
+                    break;
+                }
+            }
+            if(stepForThumbnail != null){
+                NetworkUtils.loadThumbnail(holder.mRecipeImage, stepForThumbnail.getVideoURL());
             }
         }
     }

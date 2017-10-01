@@ -3,4 +3,6 @@
     <string name="recipe_network_source" translatable="false">https://go.udacity.com</string>
     <string name="title_ingredient_list">Ingredients</string>
     <string name="title_ingredient_detail">Ingredient Detail</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>

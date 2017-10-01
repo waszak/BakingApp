@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.widget.ImageView;
 
 import com.example.android.bakingapp.R;
@@ -78,7 +79,13 @@ public class NetworkUtils {
                 MediaMetadataRetriever mediaMetadataRetriever = null;
                 try {
                     mediaMetadataRetriever = new MediaMetadataRetriever();
-                    mediaMetadataRetriever.setDataSource(movieUrl, new HashMap<>());
+                    //https://issuetracker.google.com/issues/36952379
+                    //I got this bug on one of my test phones.
+                    if(Build.VERSION.SDK_INT > 21) {
+                        mediaMetadataRetriever.setDataSource(movieUrl, new HashMap<>());
+                    }else {
+                        mediaMetadataRetriever.setDataSource(movieUrl);
+                    }
 
                     bitmap = mediaMetadataRetriever.getFrameAtTime(OPTION_CLOSEST_SYNC);
                 } catch (Exception e) {

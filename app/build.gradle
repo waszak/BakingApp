@@ -69,7 +69,7 @@ dependencies {
 
     compile 'com.hannesdorfmann:adapterdelegates3:3.0.1'
 
-
+    compile 'com.github.wseemann:FFmpegMediaMetadataRetriever:1.0.14'
 
 
 

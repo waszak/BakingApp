@@ -1,15 +1,20 @@
 package com.example.android.bakingapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 
 import com.example.android.bakingapp.adapters.RecipeRecyclerViewAdapter;
 import com.example.android.bakingapp.models.Recipe;
 import com.example.android.bakingapp.models.Step;
+import com.example.android.bakingapp.utilities.RecipePreferences;
 
 import butterknife.BindBool;
 import butterknife.BindView;
@@ -33,6 +38,9 @@ public class IngredientListActivity extends AppCompatActivity {
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.ingredient_list) RecyclerView mRecyclerView;
+
+    @BindView(R.id.fab)
+    FloatingActionButton mFloatingActionButton;
     private Recipe mRecipe;
     private Step mStep;
 
@@ -46,14 +54,12 @@ public class IngredientListActivity extends AppCompatActivity {
         setSupportActionBar(mToolbar);
         mToolbar.setTitle(getTitle());
 
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
+        mFloatingActionButton.setOnClickListener(view -> {
+            RecipePreferences.setRecipeId(this,mRecipe);
+            Intent intent = new Intent(this, RecipeWidget.class);
+            intent.setAction(WidgetProvider.RECIPE_CHANGED);
+            sendBroadcast(intent);
+        });
 
         onRestoreInstanceState(savedInstanceState);
         setupRecyclerView(mRecyclerView);
@@ -71,17 +77,19 @@ public class IngredientListActivity extends AppCompatActivity {
         }
 
         recyclerView.setAdapter(new RecipeRecyclerViewAdapter(this, mRecipe, mTwoPane));
-        if(intent != null && intent.getExtras() != null &&
+        if( intent != null && intent.getExtras() != null &&
                 intent.getExtras().containsKey(Step.TAG)){
             Bundle arguments = new Bundle();
             mStep =  intent.getExtras().getParcelable(Step.TAG);
-            arguments.putParcelable(Step.TAG, mStep);
-            arguments.putParcelable(Recipe.TAG, mRecipe);
-            IngredientDetailFragment fragment = new IngredientDetailFragment();
-            fragment.setArguments(arguments);
-            this.getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.ingriedient_detail_container, fragment)
-                    .commit();
+            if(mTwoPane) {
+                arguments.putParcelable(Step.TAG, mStep);
+                arguments.putParcelable(Recipe.TAG, mRecipe);
+                IngredientDetailFragment fragment = new IngredientDetailFragment();
+                fragment.setArguments(arguments);
+                this.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.ingriedient_detail_container, fragment)
+                        .commit();
+            }
         }
     }
 
