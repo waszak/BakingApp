@@ -2,7 +2,9 @@ package com.example.android.bakingapp;
 
 
 import android.os.SystemClock;
+import android.support.test.espresso.Espresso;
 import android.support.test.espresso.ViewInteraction;
+import android.support.test.espresso.intent.Intents;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.LargeTest;
@@ -13,14 +15,17 @@ import android.view.ViewParent;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.intent.Intents.intended;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
@@ -33,6 +38,11 @@ public class MainActivityTest {
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class);
 
+    @Before
+    public  void  setup(){
+        Intents.init();
+    }
+
     @Test
     public void mainActivityTest() {
 
@@ -40,17 +50,9 @@ public class MainActivityTest {
                 allOf(withId(R.id.recipe_list), isDisplayed()));
         SystemClock.sleep(3000);
         recyclerView.perform(actionOnItemAtPosition(0, click()));
+        SystemClock.sleep(1000);
 
-        ViewInteraction textView = onView(
-                allOf(withText("Ingredients"),
-                        childAtPosition(
-                                allOf(withId(R.id.toolbar),
-                                        childAtPosition(
-                                                withId(R.id.app_bar),
-                                                0)),
-                                0),
-                        isDisplayed()));
-        textView.check(matches(withText("Ingredients")));
+        intended(hasComponent(IngredientListActivity.class.getName()));
 
     }
 

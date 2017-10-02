@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.example.android.bakingapp.models.Recipe;
+import com.google.android.exoplayer2.C;
 
 /**
  * Created by Waszak on 01.10.2017.
@@ -12,6 +13,7 @@ import com.example.android.bakingapp.models.Recipe;
 
 public class RecipePreferences {
     public static final String PREF_RECIPE_ID = "recipe_to_check";
+    public static final String POSTION_VIDEO = "position_video";
     public static void setRecipeId(Context context, Recipe recipe) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sp.edit();

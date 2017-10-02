@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.example.android.bakingapp.models.Recipe;
 import com.example.android.bakingapp.models.Step;
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
@@ -42,7 +43,7 @@ import butterknife.ButterKnife;
 public class IngredientDetailActivity extends AppCompatActivity {
 
     private static final String TAG = IngredientDetailActivity.class.getSimpleName();
-
+    public static final String POSITION_VIDEO = "position_video";
     @BindView(R.id.step_description) TextView mDescription;
     @BindView(R.id.step_video)
     SimpleExoPlayerView mExoPlayerView;
@@ -58,6 +59,7 @@ public class IngredientDetailActivity extends AppCompatActivity {
     private PlaybackStateCompat.Builder mStateBuilder;
     private Step mStep;
     private Recipe mRecipe;
+    private long mPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +67,7 @@ public class IngredientDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_ingredient_detail);
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
-
+        mPosition = C.TIME_UNSET;
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
@@ -99,7 +101,7 @@ public class IngredientDetailActivity extends AppCompatActivity {
             Intent startChildActivityIntent = new Intent(context, destinationActivity);
             startChildActivityIntent.putExtra(Step.TAG, mStep);
             startChildActivityIntent.putExtra(Recipe.TAG, mRecipe);
-
+            startChildActivityIntent.putExtra(IngredientDetailActivity.POSITION_VIDEO, mPosition);
             startActivity(startChildActivityIntent);
         }
 
@@ -124,8 +126,11 @@ public class IngredientDetailActivity extends AppCompatActivity {
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     this, userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
+            if(mPosition != C.TIME_UNSET){
+                mExoPlayer.seekTo(mPosition);
+            }
             mExoPlayer.setPlayWhenReady(true);
-        }else{
+        }else if(Strings.isNullOrEmpty(step.getVideoURL())){
             mExoPlayerView.setVisibility(View.INVISIBLE);
         }
     }
@@ -161,6 +166,8 @@ public class IngredientDetailActivity extends AppCompatActivity {
             outState.putParcelable(Recipe.TAG, mRecipe);
         }if(mStep != null){
             outState.putParcelable(Step.TAG, mStep);
+        }if (mPosition != C.TIME_UNSET) {
+            outState.putLong(POSITION_VIDEO, mPosition);
         }
         super.onSaveInstanceState(outState);
     }
@@ -175,6 +182,8 @@ public class IngredientDetailActivity extends AppCompatActivity {
             mRecipe = savedInstanceState.getParcelable(Recipe.TAG);
         } if(savedInstanceState.containsKey(Step.TAG)){
             mStep = savedInstanceState.getParcelable(Step.TAG);
+        } if(savedInstanceState.containsKey(POSITION_VIDEO)){
+            mPosition = savedInstanceState.getLong(POSITION_VIDEO);
         }
     }
     /**
@@ -187,6 +196,12 @@ public class IngredientDetailActivity extends AppCompatActivity {
         mMediaSession.setActive(false);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initializePlayer(mStep);
+    }
+
     /**
      * Release ExoPlayer.
      */
@@ -195,6 +210,14 @@ public class IngredientDetailActivity extends AppCompatActivity {
             mExoPlayer.stop();
             mExoPlayer.release();
             mExoPlayer = null;
+        }
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mExoPlayer != null) {
+            mPosition = mExoPlayer.getCurrentPosition();
+            releasePlayer();
         }
     }
 
@@ -211,6 +234,7 @@ public class IngredientDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(this, IngredientListActivity.class);
             intent.putExtra(Recipe.TAG, mRecipe);
             intent.putExtra(Step.TAG, mStep);
+            intent.putExtra(POSITION_VIDEO, mPosition);
             navigateUpTo(intent);
             return true;
         }

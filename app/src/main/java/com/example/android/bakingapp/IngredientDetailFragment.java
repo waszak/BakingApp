@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import com.example.android.bakingapp.models.Recipe;
 import com.example.android.bakingapp.models.Step;
+import com.example.android.bakingapp.utilities.RecipePreferences;
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
@@ -48,6 +50,7 @@ public class IngredientDetailFragment extends Fragment {
     private SimpleExoPlayer mExoPlayer;
     private MediaSessionCompat mMediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
+    private long mPosition;
 
 
     /**
@@ -61,12 +64,15 @@ public class IngredientDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mPosition = C.TIME_UNSET;
         Bundle args = getArguments();
         if (args.containsKey(Step.TAG)) {
             if(args.containsKey(Recipe.TAG)){
                 mRecipe = args.getParcelable(Recipe.TAG);
             } if(args.containsKey(Step.TAG)){
                 mStep = args.getParcelable(Step.TAG);
+            } if(args.containsKey(IngredientDetailActivity.POSITION_VIDEO)){
+                mPosition = args.getLong(IngredientDetailActivity.POSITION_VIDEO);
             }
 
         }
@@ -74,6 +80,9 @@ public class IngredientDetailFragment extends Fragment {
             mRecipe = savedInstanceState.getParcelable(Recipe.TAG);
         } if(savedInstanceState != null && savedInstanceState.containsKey(Step.TAG)){
             mStep = savedInstanceState.getParcelable(Step.TAG);
+        }if(savedInstanceState != null && savedInstanceState
+                .containsKey(IngredientDetailActivity.POSITION_VIDEO)){
+            mPosition = savedInstanceState.getLong(IngredientDetailActivity.POSITION_VIDEO);
         }
 
 
@@ -81,11 +90,12 @@ public class IngredientDetailFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
         if (mRecipe != null){
             outState.putParcelable(Recipe.TAG, mRecipe);
         }if(mStep != null){
             outState.putParcelable(Step.TAG, mStep);
+        }if (mPosition != C.TIME_UNSET) {
+            outState.putLong(IngredientDetailActivity.POSITION_VIDEO, mPosition);
         }
         super.onSaveInstanceState(outState);
     }
@@ -118,8 +128,11 @@ public class IngredientDetailFragment extends Fragment {
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
+            if(mPosition != C.TIME_UNSET){
+                mExoPlayer.seekTo(mPosition);
+            }
             mExoPlayer.setPlayWhenReady(true);
-        }else{
+        }else if ( Strings.isNullOrEmpty(step.getVideoURL())){
             mExoPlayerView.setVisibility(View.INVISIBLE);
         }
     }
@@ -170,6 +183,21 @@ public class IngredientDetailFragment extends Fragment {
             mExoPlayer.stop();
             mExoPlayer.release();
             mExoPlayer = null;
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        initializePlayer(mStep);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mExoPlayer != null) {
+            mPosition = mExoPlayer.getCurrentPosition();
+            releasePlayer();
         }
     }
 }

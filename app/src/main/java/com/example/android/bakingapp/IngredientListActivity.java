@@ -4,14 +4,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 
 import com.example.android.bakingapp.adapters.RecipeRecyclerViewAdapter;
 import com.example.android.bakingapp.models.Recipe;
 import com.example.android.bakingapp.models.Step;
 import com.example.android.bakingapp.utilities.RecipePreferences;
+import com.google.android.exoplayer2.C;
 
 import butterknife.BindBool;
 import butterknife.BindView;
@@ -41,6 +44,7 @@ public class IngredientListActivity extends AppCompatActivity {
     private Recipe mRecipe;
     private Step mStep;
 
+    public static final String POSTION_VIDEO = "position_video";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,11 @@ public class IngredientListActivity extends AppCompatActivity {
 
         setSupportActionBar(mToolbar);
         mToolbar.setTitle(getTitle());
+        // Show the Up button in the action bar.
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         mFloatingActionButton.setOnClickListener(view -> {
             RecipePreferences.setRecipeId(this,mRecipe);
@@ -78,9 +87,14 @@ public class IngredientListActivity extends AppCompatActivity {
                 intent.getExtras().containsKey(Step.TAG)){
             Bundle arguments = new Bundle();
             mStep =  intent.getExtras().getParcelable(Step.TAG);
+            long positionVideo = C.POSITION_UNSET;
+            if(intent.getExtras().containsKey(IngredientDetailActivity.POSITION_VIDEO)){
+                positionVideo = intent.getExtras().getLong(IngredientDetailActivity.POSITION_VIDEO);
+            }
             if(mTwoPane) {
                 arguments.putParcelable(Step.TAG, mStep);
                 arguments.putParcelable(Recipe.TAG, mRecipe);
+                arguments.putLong(IngredientDetailActivity.POSITION_VIDEO, positionVideo);
                 IngredientDetailFragment fragment = new IngredientDetailFragment();
                 fragment.setArguments(arguments);
                 this.getSupportFragmentManager().beginTransaction()
@@ -89,7 +103,24 @@ public class IngredientListActivity extends AppCompatActivity {
             }
         }
     }
-
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            // This ID represents the Home or Up button. In the case of this
+            // activity, the Up button is shown. For
+            // more details, see the Navigation pattern on Android Design:
+            //
+            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
+            //
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra(Recipe.TAG, mRecipe);
+            intent.putExtra(Step.TAG, mStep);
+            navigateUpTo(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         if(savedInstanceState == null){
