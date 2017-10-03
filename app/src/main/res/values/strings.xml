@@ -9,4 +9,6 @@
     <string name="step_image">step image</string>
     <string name="StepPlayer" translatable="false">StepPlayer</string>
     <string name="Ingredients">Ingredients</string>
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="connection_failed">Connection to server failed</string>
 </resources>

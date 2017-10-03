@@ -1,3 +1,22 @@
+/*
+ *
+ *  * Copyright (C) 2017. The Android Open Source Project
+ *  *
+ *  *   Licensed under the Apache License, Version 2.0 (the "License");
+ *  *   you may not use this file except in compliance with the License.
+ *  *   You may obtain a copy of the License at
+ *  *
+ *  *       http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  *   Unless required by applicable law or agreed to in writing, software
+ *  *   distributed under the License is distributed on an "AS IS" BASIS,
+ *  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  *   See the License for the specific language governing permissions and
+ *  *   limitations under the License.
+ *  *
+ *
+ */
+
 package com.example.android.bakingapp.adapters;
 
 import android.content.Context;
@@ -21,6 +40,7 @@ import com.example.android.bakingapp.models.Step;
 import com.example.android.bakingapp.utilities.NetworkUtils;
 import com.google.common.base.Strings;
 import com.hannesdorfmann.adapterdelegates3.AbsListItemAdapterDelegate;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -64,7 +84,10 @@ class StepItemAdapterDelegate extends AbsListItemAdapterDelegate<Step, Parcelabl
     @NonNull List<Object> mValues) {
             holder.mStep = step;
             holder.mTitle.setText(step.getShortDescription());
-            if(!Strings.isNullOrEmpty(step.getVideoURL())){
+            if(!Strings.isNullOrEmpty(step.getThumbnailURL())) {
+                NetworkUtils.buildImageRequest(holder.mView.getContext(), step.getThumbnailURL())
+                        .into(holder.mImage);
+            }else if(!Strings.isNullOrEmpty(step.getVideoURL())){
                 NetworkUtils.loadThumbnail(holder.mImage, step.getVideoURL());
             }
 

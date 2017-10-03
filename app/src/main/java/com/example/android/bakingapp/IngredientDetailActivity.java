@@ -1,34 +1,35 @@
+/*
+ *
+ *  * Copyright (C) 2017. The Android Open Source Project
+ *  *
+ *  *   Licensed under the Apache License, Version 2.0 (the "License");
+ *  *   you may not use this file except in compliance with the License.
+ *  *   You may obtain a copy of the License at
+ *  *
+ *  *       http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  *   Unless required by applicable law or agreed to in writing, software
+ *  *   distributed under the License is distributed on an "AS IS" BASIS,
+ *  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  *   See the License for the specific language governing permissions and
+ *  *   limitations under the License.
+ *  *
+ *
+ */
+
 package com.example.android.bakingapp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
 
 import com.example.android.bakingapp.models.Recipe;
 import com.example.android.bakingapp.models.Step;
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.LoadControl;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
-import com.google.common.base.Strings;
 
 import butterknife.BindBool;
 import butterknife.BindView;
@@ -42,11 +43,8 @@ import butterknife.ButterKnife;
  */
 public class IngredientDetailActivity extends AppCompatActivity {
 
-    private static final String TAG = IngredientDetailActivity.class.getSimpleName();
     public static final String POSITION_VIDEO = "position_video";
-    @BindView(R.id.step_description) TextView mDescription;
-    @BindView(R.id.step_video)
-    SimpleExoPlayerView mExoPlayerView;
+
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -54,9 +52,6 @@ public class IngredientDetailActivity extends AppCompatActivity {
     @BindBool(R.bool.two_pane) boolean mTwoPane;
     @BindView(R.id.detail_toolbar) Toolbar mToolbar;
 
-    private SimpleExoPlayer mExoPlayer;
-    private MediaSessionCompat mMediaSession;
-    private PlaybackStateCompat.Builder mStateBuilder;
     private Step mStep;
     private Recipe mRecipe;
     private long mPosition;
@@ -89,8 +84,6 @@ public class IngredientDetailActivity extends AppCompatActivity {
         {
             throw new IllegalArgumentException("Pass recipe");
         }
-        mDescription.setText(mStep.getDescription());
-
 
         if (mTwoPane) {
             // Create the detail fragment and add it to the activity
@@ -103,62 +96,20 @@ public class IngredientDetailActivity extends AppCompatActivity {
             startChildActivityIntent.putExtra(Recipe.TAG, mRecipe);
             startChildActivityIntent.putExtra(IngredientDetailActivity.POSITION_VIDEO, mPosition);
             startActivity(startChildActivityIntent);
+        } else{
+            Bundle arguments = new Bundle();
+            arguments.putParcelable(Step.TAG, mStep);
+            arguments.putParcelable(Recipe.TAG, mRecipe);
+            arguments.putLong(IngredientDetailActivity.POSITION_VIDEO, mPosition);
+            IngredientDetailFragment fragment = new IngredientDetailFragment();
+            fragment.setArguments(arguments);
+            this.getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.ingredient_placeholder, fragment)
+                    .commit();
         }
 
-        initializeMediaSession();
-        initializePlayer(mStep);
     }
 
-    private void initializePlayer(Step step) {
-        if (mExoPlayer == null && !Strings.isNullOrEmpty(step.getVideoURL())) {
-            // Create an instance of the ExoPlayer.
-            TrackSelector trackSelector = new DefaultTrackSelector();
-            LoadControl loadControl = new DefaultLoadControl();
-            mExoPlayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector, loadControl);
-            mExoPlayerView.setPlayer(mExoPlayer);
-
-            // Set the ExoPlayer.EventListener to this activity.
-            //mExoPlayer.addListener(this);
-
-            // Prepare the MediaSource.
-            String userAgent = Util.getUserAgent(this, getString(R.string.StepPlayer));
-            Uri mediaUri = Uri.parse(step.getVideoURL());
-            MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
-                    this, userAgent), new DefaultExtractorsFactory(), null, null);
-            mExoPlayer.prepare(mediaSource);
-            if(mPosition != C.TIME_UNSET){
-                mExoPlayer.seekTo(mPosition);
-            }
-            mExoPlayer.setPlayWhenReady(true);
-        }else if(Strings.isNullOrEmpty(step.getVideoURL())){
-            mExoPlayerView.setVisibility(View.INVISIBLE);
-        }
-    }
-    private void initializeMediaSession() {
-        // Create a MediaSessionCompat.
-        mMediaSession = new MediaSessionCompat(this, TAG);
-
-        // Enable callbacks from MediaButtons and TransportControls.
-        mMediaSession.setFlags(
-                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
-                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-
-        // Do not let MediaButtons restart the player when the app is not visible.
-        mMediaSession.setMediaButtonReceiver(null);
-
-        // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player.
-        mStateBuilder = new PlaybackStateCompat.Builder()
-                .setActions(
-                        PlaybackStateCompat.ACTION_PLAY |
-                                PlaybackStateCompat.ACTION_PAUSE |
-                                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS |
-                                PlaybackStateCompat.ACTION_PLAY_PAUSE);
-
-        mMediaSession.setPlaybackState(mStateBuilder.build());
-
-        // Start the Media Session since the activity is active.
-        mMediaSession.setActive(true);
-    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -184,40 +135,6 @@ public class IngredientDetailActivity extends AppCompatActivity {
             mStep = savedInstanceState.getParcelable(Step.TAG);
         } if(savedInstanceState.containsKey(POSITION_VIDEO)){
             mPosition = savedInstanceState.getLong(POSITION_VIDEO);
-        }
-    }
-    /**
-     * Release the player when the activity is destroyed.
-     */
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        releasePlayer();
-        mMediaSession.setActive(false);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        initializePlayer(mStep);
-    }
-
-    /**
-     * Release ExoPlayer.
-     */
-    private void releasePlayer() {
-        if(mExoPlayer != null) {
-            mExoPlayer.stop();
-            mExoPlayer.release();
-            mExoPlayer = null;
-        }
-    }
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (mExoPlayer != null) {
-            mPosition = mExoPlayer.getCurrentPosition();
-            releasePlayer();
         }
     }
 

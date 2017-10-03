@@ -1,3 +1,22 @@
+/*
+ *
+ *  * Copyright (C) 2017. The Android Open Source Project
+ *  *
+ *  *   Licensed under the Apache License, Version 2.0 (the "License");
+ *  *   you may not use this file except in compliance with the License.
+ *  *   You may obtain a copy of the License at
+ *  *
+ *  *       http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  *   Unless required by applicable law or agreed to in writing, software
+ *  *   distributed under the License is distributed on an "AS IS" BASIS,
+ *  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  *   See the License for the specific language governing permissions and
+ *  *   limitations under the License.
+ *  *
+ *
+ */
+
 package com.example.android.bakingapp;
 
 import android.content.Context;
@@ -8,9 +27,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.LayoutManager;
+import android.widget.Toast;
 
 import com.example.android.bakingapp.adapters.RecipeListAdapter;
 import com.example.android.bakingapp.models.Recipe;
+import com.example.android.bakingapp.utilities.ConnectivityReceiver;
 import com.example.android.bakingapp.utilities.NetworkUtils;
 import com.example.android.bakingapp.utilities.RecipeService;
 
@@ -72,7 +93,10 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
     }
 
     private void fillRecipeList() {
-
+        if(!ConnectivityReceiver.isConnected()){
+            Toast.makeText(this, R.string.no_internet_connection,Toast.LENGTH_LONG).show();
+            return;
+        }
         RecipeService recipeService = NetworkUtils.buildRecipeService(this);
         recipeService.loadRecipeListing().enqueue(new Callback<List<Recipe>>() {
                 @Override
@@ -82,6 +106,8 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
                         mAdapter.setRecipesList(response.body());
 
                     } else {
+                        Toast.makeText(MainActivity.this
+                                ,getString(R.string.connection_failed),Toast.LENGTH_LONG).show();
                         Timber.e("Error response, no access to resource");
                     }
                 }
@@ -89,6 +115,8 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
                 @Override
                 public void onFailure(@NonNull Call<List<Recipe>> call, @NonNull Throwable t) {
                     // something went completely south (like no internet connection)
+                    Toast.makeText(MainActivity.this
+                            ,getString(R.string.connection_failed),Toast.LENGTH_LONG).show();
                     Timber.d(t,"Error");
                 }
             });
