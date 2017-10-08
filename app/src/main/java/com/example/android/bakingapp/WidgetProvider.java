@@ -45,8 +45,8 @@ import timber.log.Timber;
 
 public class WidgetProvider implements RemoteViewsService.RemoteViewsFactory {
 
-    List<Recipe> dataSource;
-    Recipe current;
+    private List<Recipe> mDataSource;
+    private Recipe mRecipe;
     private Context mContext;
     public final static String RECIPE_CHANGED = "RECIPE_CHANGED";
     public WidgetProvider(Context context, Intent intent){
@@ -65,20 +65,20 @@ public class WidgetProvider implements RemoteViewsService.RemoteViewsFactory {
 
     @Override
     public void onDataSetChanged() {
-        if (dataSource == null || dataSource.isEmpty()) {
+        if (mDataSource == null || mDataSource.isEmpty()) {
             fillRecipeList();
             return;
         }
         Timber.d("list data changed");
         UpdateRecipe();
     }
-    void UpdateRecipe(){
-        if (dataSource == null || dataSource.isEmpty()) {
+    private void UpdateRecipe(){
+        if (mDataSource == null || mDataSource.isEmpty()) {
             return;
         }
         int id = RecipePreferences.getRecipeId(mContext);
         Recipe recipeToShow = null;
-        for (Recipe recipe: dataSource) {
+        for (Recipe recipe: mDataSource) {
             recipeToShow = recipe; //in case there is nothing selected we show first one
             if(recipe.getId() == id){
                 break;
@@ -87,18 +87,18 @@ public class WidgetProvider implements RemoteViewsService.RemoteViewsFactory {
         if(recipeToShow == null){
             return;
         }
-        current = recipeToShow;
+        mRecipe = recipeToShow;
     }
 
-    void fillRecipeList() {
+    private void fillRecipeList() {
 
         RecipeService recipeService = NetworkUtils.buildRecipeService(mContext);
         recipeService.loadRecipeListing().enqueue(new Callback<List<Recipe>>() {
             @Override
             public void onResponse(@NonNull Call<List<Recipe>> call, @NonNull Response<List<Recipe>> response) {
-                if (response.isSuccessful() && response.body() != null && (dataSource == null || dataSource.isEmpty())) {
+                if (response.isSuccessful() && response.body() != null && (mDataSource == null || mDataSource.isEmpty())) {
                     // tasks available
-                    dataSource = response.body();
+                    mDataSource = response.body();
                     Intent intent = new Intent(mContext, RecipeWidget.class);
                     intent.setAction(WidgetProvider.RECIPE_CHANGED);
                     mContext.sendBroadcast(intent);
@@ -117,8 +117,6 @@ public class WidgetProvider implements RemoteViewsService.RemoteViewsFactory {
 
     }
 
-
-
     /**
      *
      * @param position of view we want to get
@@ -128,8 +126,8 @@ public class WidgetProvider implements RemoteViewsService.RemoteViewsFactory {
     public RemoteViews getViewAt(int position) {
         Timber.d("Get view at position "+position);
         RemoteViews remoteViews =  new RemoteViews(mContext.getPackageName(),
-                R.layout.ingredient_list_content);
-        Ingredient ingredient = current.getIngredients().get(position);
+                R.layout.ingredient_content_widget);
+        Ingredient ingredient = mRecipe.getIngredients().get(position);
 
         remoteViews.setTextViewText(R.id.id, ingredient.getIngredient());
         remoteViews.setTextViewText(R.id.content, ingredient.getQuantity()+" "+ingredient.getMeasure());
@@ -142,7 +140,7 @@ public class WidgetProvider implements RemoteViewsService.RemoteViewsFactory {
 
     @Override
     public int getCount() {
-        return current==null?0:current.getIngredients().size();
+        return mRecipe==null?0:mRecipe.getIngredients().size();
     }
 
     @Override

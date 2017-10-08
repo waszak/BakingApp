@@ -58,7 +58,7 @@ import butterknife.ButterKnife;
  */
 public class IngredientDetailFragment extends Fragment {
 
-    private static final String TAG = IngredientDetailFragment.class.getSimpleName();
+    public static final String TAG = IngredientDetailFragment.class.getSimpleName();
     private Step mStep;
     private Recipe mRecipe;
     @BindView(R.id.step_description)
@@ -82,48 +82,55 @@ public class IngredientDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         mPosition = C.TIME_UNSET;
-        Bundle args = getArguments();
-        if (args.containsKey(Step.TAG)) {
-            if(args.containsKey(Recipe.TAG)){
-                mRecipe = args.getParcelable(Recipe.TAG);
-            } if(args.containsKey(Step.TAG)){
-                mStep = args.getParcelable(Step.TAG);
-            } if(args.containsKey(IngredientDetailActivity.POSITION_VIDEO)){
-                mPosition = args.getLong(IngredientDetailActivity.POSITION_VIDEO);
-            }
 
+        restoreState(getArguments());
+        restoreState(savedInstanceState);
+    }
+
+    private void restoreState(Bundle state) {
+        if(state == null){
+            return;
         }
-        if(savedInstanceState != null && savedInstanceState.containsKey(Recipe.TAG)){
-            mRecipe = savedInstanceState.getParcelable(Recipe.TAG);
-        } if(savedInstanceState != null && savedInstanceState.containsKey(Step.TAG)){
-            mStep = savedInstanceState.getParcelable(Step.TAG);
-        }if(savedInstanceState != null && savedInstanceState
-                .containsKey(IngredientDetailActivity.POSITION_VIDEO)){
-            mPosition = savedInstanceState.getLong(IngredientDetailActivity.POSITION_VIDEO);
+        if (state.containsKey(Recipe.TAG)) {
+            mRecipe = state.getParcelable(Recipe.TAG);
         }
-
-
+        if (state.containsKey(Step.TAG)) {
+            mStep = state.getParcelable(Step.TAG);
+        }
+        if (state.containsKey(IngredientDetailActivity.POSITION_VIDEO)) {
+            mPosition = state.getLong(IngredientDetailActivity.POSITION_VIDEO);
+        }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if (mRecipe != null){
+        if (mRecipe != null) {
             outState.putParcelable(Recipe.TAG, mRecipe);
-        }if(mStep != null){
+        }
+        if (mStep != null) {
             outState.putParcelable(Step.TAG, mStep);
-        }if (mPosition != C.TIME_UNSET) {
+        }
+        if (mPosition != C.TIME_UNSET) {
             outState.putLong(IngredientDetailActivity.POSITION_VIDEO, mPosition);
         }
         super.onSaveInstanceState(outState);
+    }
+
+    public long getPosition(){
+        return  mPosition;
+    }
+
+    private boolean mrResumeVideo = false;
+    public void resumeVideo(){
+        mrResumeVideo = true;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.ingredient_detail, container, false);
-        ButterKnife.bind(this,rootView);
+        ButterKnife.bind(this, rootView);
         mDescription.setText(mStep.getDescription());
         initializeMediaSession();
         initializePlayer(mStep);
@@ -131,7 +138,7 @@ public class IngredientDetailFragment extends Fragment {
     }
 
     private void initializePlayer(Step step) {
-        if (mExoPlayer == null && !Strings.isNullOrEmpty(step.getVideoURL()) ) {
+        if (mExoPlayer == null && !Strings.isNullOrEmpty(step.getVideoURL())) {
             // Create an instance of the ExoPlayer.
             TrackSelector trackSelector = new DefaultTrackSelector();
             LoadControl loadControl = new DefaultLoadControl();
@@ -147,14 +154,15 @@ public class IngredientDetailFragment extends Fragment {
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
-            if(mPosition != C.TIME_UNSET){
+            if (mPosition != C.TIME_UNSET) {
                 mExoPlayer.seekTo(mPosition);
             }
-            mExoPlayer.setPlayWhenReady(true);
-        }else if ( Strings.isNullOrEmpty(step.getVideoURL())){
+            mExoPlayer.setPlayWhenReady(mrResumeVideo);
+        } else if (Strings.isNullOrEmpty(step.getVideoURL())) {
             mExoPlayerView.setVisibility(View.INVISIBLE);
         }
     }
+
     private void initializeMediaSession() {
 
         // Create a MediaSessionCompat.
@@ -179,11 +187,11 @@ public class IngredientDetailFragment extends Fragment {
         mMediaSession.setPlaybackState(mStateBuilder.build());
 
 
-
         // Start the Media Session since the activity is active.
         mMediaSession.setActive(true);
 
     }
+
     /**
      * Release the player when the activity is destroyed.
      */
@@ -198,7 +206,7 @@ public class IngredientDetailFragment extends Fragment {
      * Release ExoPlayer.
      */
     private void releasePlayer() {
-        if(mExoPlayer != null) {
+        if (mExoPlayer != null) {
             mExoPlayer.stop();
             mExoPlayer.release();
             mExoPlayer = null;

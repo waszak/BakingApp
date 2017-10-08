@@ -51,13 +51,17 @@ import butterknife.ButterKnife;
  * Created by Waszak on 01.10.2017.
  */
 
-class StepItemAdapterDelegate extends AbsListItemAdapterDelegate<Step, Parcelable,
+public class StepItemAdapterDelegate extends AbsListItemAdapterDelegate<Step, Parcelable,
         StepItemAdapterDelegate.StepViewHolder> {
 
     private LayoutInflater inflater;
     private Recipe mRecipe;
     private AppCompatActivity mActivity;
     private boolean mTwoPane;
+
+    public interface IOnSetStep{
+        void  setStep(Step step);
+    }
 
     StepItemAdapterDelegate(AppCompatActivity activity, Recipe recipe, boolean twoPane) {
         inflater = activity.getLayoutInflater();
@@ -92,6 +96,9 @@ class StepItemAdapterDelegate extends AbsListItemAdapterDelegate<Step, Parcelabl
             }
 
             holder.mView.setOnClickListener(v -> {
+                if((IOnSetStep)mActivity != null){
+                    ((IOnSetStep) mActivity).setStep(holder.mStep);
+                }
                 if (mTwoPane) {
                     Bundle arguments = new Bundle();
                     arguments.putParcelable(Step.TAG, holder.mStep);
@@ -99,8 +106,9 @@ class StepItemAdapterDelegate extends AbsListItemAdapterDelegate<Step, Parcelabl
                     IngredientDetailFragment fragment = new IngredientDetailFragment();
                     fragment.setArguments(arguments);
                     mActivity.getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.ingriedient_detail_container, fragment)
+                        .replace(R.id.ingriedient_detail_container, fragment, IngredientDetailFragment.TAG)
                         .commit();
+                    fragment.resumeVideo();
                 } else {
                     Context context = v.getContext();
                     Intent intent = new Intent(context, IngredientDetailActivity.class);

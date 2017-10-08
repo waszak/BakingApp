@@ -62,7 +62,9 @@ public class IngredientDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_ingredient_detail);
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
-        mPosition = C.TIME_UNSET;
+
+        mPosition = C.POSITION_UNSET;
+        createCorrectViews(savedInstanceState);
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
@@ -70,18 +72,15 @@ public class IngredientDetailActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        Intent intent = getIntent();
-        if(intent != null && intent.hasExtra(Step.TAG) && intent.hasExtra(Recipe.TAG)) {
-            mStep = intent.getExtras().getParcelable(Step.TAG);
-            mRecipe = intent.getExtras().getParcelable(Recipe.TAG);
-        }
+    }
+
+    private void createCorrectViews(Bundle savedInstanceState) {
         onRestoreInstanceState(savedInstanceState);
-        if( mStep == null)
-        {
+        getDataFromIntent();
+        if( mStep == null) {
             throw new IllegalArgumentException("Pass step");
         }
-        if( mRecipe == null)
-        {
+        if( mRecipe == null) {
             throw new IllegalArgumentException("Pass recipe");
         }
 
@@ -94,20 +93,47 @@ public class IngredientDetailActivity extends AppCompatActivity {
             Intent startChildActivityIntent = new Intent(context, destinationActivity);
             startChildActivityIntent.putExtra(Step.TAG, mStep);
             startChildActivityIntent.putExtra(Recipe.TAG, mRecipe);
-            startChildActivityIntent.putExtra(IngredientDetailActivity.POSITION_VIDEO, mPosition);
+            if(mPosition != C.POSITION_UNSET){
+                startChildActivityIntent.putExtra(IngredientDetailActivity.POSITION_VIDEO, mPosition);
+            }
+
             startActivity(startChildActivityIntent);
-        } else{
+        } else if(getSupportFragmentManager().findFragmentByTag(IngredientDetailFragment.TAG) == null){
             Bundle arguments = new Bundle();
+
             arguments.putParcelable(Step.TAG, mStep);
             arguments.putParcelable(Recipe.TAG, mRecipe);
-            arguments.putLong(IngredientDetailActivity.POSITION_VIDEO, mPosition);
+            if(mPosition != C.POSITION_UNSET){
+                arguments.putLong(IngredientDetailActivity.POSITION_VIDEO, mPosition);
+            }
+
             IngredientDetailFragment fragment = new IngredientDetailFragment();
             fragment.setArguments(arguments);
             this.getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.ingredient_placeholder, fragment)
+                    .replace(R.id.ingredient_placeholder, fragment, IngredientDetailFragment.TAG)
                     .commit();
+            fragment.resumeVideo();
+        }else {
+            IngredientDetailFragment fragment =  (IngredientDetailFragment)getSupportFragmentManager()
+                    .findFragmentByTag(IngredientDetailFragment.TAG);
+            fragment.resumeVideo();
         }
+    }
 
+    private void getDataFromIntent() {
+        Intent intent = getIntent();
+        if(intent == null || intent.getExtras() == null){
+            return;
+        }
+        if (intent.getExtras().containsKey(Recipe.TAG)) {
+            mRecipe = intent.getExtras().getParcelable(Recipe.TAG);
+        }
+        if(intent.getExtras().containsKey(Step.TAG)){
+            mStep = intent.getExtras().getParcelable(Step.TAG);
+        }
+        if(intent.getExtras().containsKey(IngredientDetailActivity.POSITION_VIDEO)){
+            mPosition = intent.getExtras().getLong(IngredientDetailActivity.POSITION_VIDEO);
+        }
     }
 
 
@@ -117,8 +143,11 @@ public class IngredientDetailActivity extends AppCompatActivity {
             outState.putParcelable(Recipe.TAG, mRecipe);
         }if(mStep != null){
             outState.putParcelable(Step.TAG, mStep);
-        }if (mPosition != C.TIME_UNSET) {
-            outState.putLong(POSITION_VIDEO, mPosition);
+        }
+        IngredientDetailFragment fragment = (IngredientDetailFragment)getSupportFragmentManager()
+                .findFragmentByTag(IngredientDetailFragment.TAG);
+        if(fragment != null && fragment.getPosition() != C.POSITION_UNSET){
+            outState.putLong(IngredientDetailActivity.POSITION_VIDEO, fragment.getPosition());
         }
         super.onSaveInstanceState(outState);
     }
@@ -133,8 +162,9 @@ public class IngredientDetailActivity extends AppCompatActivity {
             mRecipe = savedInstanceState.getParcelable(Recipe.TAG);
         } if(savedInstanceState.containsKey(Step.TAG)){
             mStep = savedInstanceState.getParcelable(Step.TAG);
-        } if(savedInstanceState.containsKey(POSITION_VIDEO)){
-            mPosition = savedInstanceState.getLong(POSITION_VIDEO);
+        }
+        if(savedInstanceState.containsKey(IngredientDetailActivity.POSITION_VIDEO)){
+            mPosition = savedInstanceState.getLong(IngredientDetailActivity.POSITION_VIDEO);
         }
     }
 
@@ -151,7 +181,6 @@ public class IngredientDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(this, IngredientListActivity.class);
             intent.putExtra(Recipe.TAG, mRecipe);
             intent.putExtra(Step.TAG, mStep);
-            intent.putExtra(POSITION_VIDEO, mPosition);
             navigateUpTo(intent);
             return true;
         }
